@@ -1,4 +1,4 @@
-FROM phusion/baseimage:0.11
+FROM phusion/baseimage:0.10.2
 LABEL maintainer="modos189 <docker@modos189.ru>"
 ENV DEBIAN_FRONTEND=noninteractive \
     VESTA=/usr/local/vesta \
@@ -12,6 +12,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN cd /tmp \
     && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 91FA4AD5 \
     && add-apt-repository ppa:deadsnakes/ppa \
+    && add-apt-repository ppa:ondrej/php \
     && add-apt-repository ppa:maxmind/ppa -y \
     && echo "nginx mysql bind clamav ssl-cert dovecot dovenull Debian-exim postgres debian-spamd epmd memcache" | xargs -n1 groupadd -K GID_MIN=100 -K GID_MAX=999 ${g} \
     && echo "nginx nginx mysql mysql bind bind clamav clamav dovecot dovecot dovenull dovenull Debian-exim Debian-exim postgres postgres debian-spamd debian-spamd epmd epmd memcache memcache" | xargs -n2 useradd -d /nonexistent -s /bin/false -K UID_MIN=100 -K UID_MAX=999 -g ${g} \
@@ -34,10 +35,10 @@ RUN cd /tmp \
     && rm ngx-misc.tar.gz \
     && curl -s https://nginx.org/keys/nginx_signing.key | apt-key add - \
     && cp /etc/apt/sources.list /etc/apt/sources.list.bak \
-    && echo "deb http://nginx.org/packages/ubuntu/ bionic nginx" | tee -a /etc/apt/sources.list \
-    && echo "deb-src http://nginx.org/packages/ubuntu/ bionic nginx" | tee -a /etc/apt/sources.list \
+    && echo "deb http://nginx.org/packages/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
+    && echo "deb-src http://nginx.org/packages/ubuntu/ xenial nginx" | tee -a /etc/apt/sources.list \
     && apt-get update && apt-get -yf -o Dpkg::Options::="--force-confold"  --no-install-recommends upgrade \
-    && apt-get install -yf -o Dpkg::Options::="--force-confold" --no-install-recommends git unzip systemd libpcre3-dev libssl-dev dpkg-dev libmaxminddb0 libmaxminddb-dev mmdb-bin libgd-dev iproute2 uuid-dev pwgen \
+    && apt-get install -yf -o Dpkg::Options::="--force-confold" --no-install-recommends git unzip systemd rsync libpcre3-dev libssl-dev dpkg-dev libmaxminddb0 libmaxminddb-dev mmdb-bin libgd-dev iproute2 uuid-dev pwgen \
     && mkdir -p ${NGINX_BUILD_DIR} \
     && cd ${NGINX_BUILD_DIR} \
     && git clone https://github.com/leev/ngx_http_geoip2_module ngx_http_geoip2_module \
@@ -54,7 +55,7 @@ RUN cd /tmp \
     && apt-get build-dep nginx -y \
     && cd ${NGINX_BUILD_DIR}/nginx-${NGINX_VERSION}; dpkg-buildpackage -uc -us -b \
     && cd ${NGINX_BUILD_DIR} \
-    && dpkg -i nginx_${NGINX_VERSION}-1~bionic_amd64.deb \
+    && dpkg -i nginx_${NGINX_VERSION}-1~xenial_amd64.deb \
     && apt-get install -yq php7.2-mbstring php7.2-cgi php7.2-cli php7.2-dev php7.2-geoip php7.2-common php7.2-xmlrpc php7.2-sybase php7.2-curl \
         php7.2-enchant php7.2-imap php7.2-xsl php7.2-mysql php7.2-mysqli php7.2-mysqlnd php7.2-pspell php7.2-gd php7.2-zip \
         php7.2-tidy php7.2-opcache php7.2-json php7.2-bz2 php7.2-pgsql php7.2-readline php7.2-imagick php7.2-phar \
@@ -97,8 +98,8 @@ RUN cd /tmp \
 
 # install additional mods since 7.2 became default in the php repo
     && apt-get install -yf --no-install-recommends libapache2-mod-php7.2 \
-        postgresql-10-postgis-2.4 postgresql-10-pgrouting postgis postgis-gui postgresql-10-pgaudit \
-        postgresql-10-postgis-2.4-scripts postgresql-10-repack \
+        postgresql-9.5-postgis-2.2 postgresql-9.5-pgrouting postgis postgis-gui \
+        postgresql-9.5-postgis-scripts \
 
 # install memcached
     && apt-get install -yf --no-install-recommends memcached php-memcached \
@@ -181,8 +182,8 @@ RUN cd /tmp \
     && cd /tmp \
 
 # postgres patch for this docker
-    && sed -i -e "s/%q%u@%d '/%q%u@%d %r '/g" /etc/postgresql/10/main/postgresql.conf \
-    && sed -i -e "s/^#listen_addresses = 'localhost'/listen_addresses = '*'/g" /etc/postgresql/10/main/postgresql.conf \
+    && sed -i -e "s/%q%u@%d '/%q%u@%d %r '/g" /etc/postgresql/9.5/main/postgresql.conf \
+    && sed -i -e "s/^#listen_addresses = 'localhost'/listen_addresses = '*'/g" /etc/postgresql/9.5/main/postgresql.conf \
 
 # php stuff - after vesta because of vesta-php installs
     && sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 600M/" /etc/php/7.2/apache2/php.ini \
