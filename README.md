@@ -5,17 +5,16 @@ Based on [niiknow/vestacp](https://github.com/niiknow/vestacp) (1.9.0).
 <b>What's different from <i>niiknow/vestacp</i>?</b>
 
 Removed golang, couchdb, redis, openvpn, mongodb, nodejs and dotnet.
-Ubuntu image updated to 18.04.
 
 Comparison of size with <i>niiknow/vestacp</i>:
 
 | image               | compressed | uncompressed |
 | ------------------- |:----------:| ------------:|
 | niiknow/vestacp     | 1.69 GB    |       4.87GB |
-| __modos189/vesta-base__ | __933.84 MB__  |       __2.66GB__ |
+| __modos189/vestacp-base__ | __933.84 MB__  |       __2.66GB__ |
 
 <b>What's included?</b>
-* ubuntu 18.04 lts + Vesta 0.9.8-25
+* ubuntu 16.04 lts + Vesta 0.9.8-25
 * nginx (proxy) -> apache2 -> php-fcgi - high performance and flexible implementation
 * ssh/sftp, letsencrypt, memcached, MariaDB 10.2
 * folder redirection for data persistence and automatic daily backup provided by VestaCP
